@@ -1,0 +1,52 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class Quiz {
+    public static void main(String[] args) {
+        ArrayList<Pergunta> perguntas = new ArrayList<>();
+        String apiUrl = "https://opentdb.com/api.php?amount=10&type=multiple";
+
+        try {
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            // Lê a resposta da API
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Processa a resposta JSON
+            JSONObject myResponse = new JSONObject(response.toString());
+            JSONArray results = myResponse.getJSONArray("results");
+
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject question = results.getJSONObject(i);
+                String pergunta = question.getString("question");
+                String respostaCorreta = question.getString("correct_answer");
+
+                // Adiciona a pergunta e resposta ao ArrayList
+                perguntas.add(new Pergunta(pergunta, respostaCorreta));
+            }
+
+            // Exibir perguntas
+            for (Pergunta p : perguntas) {
+                System.out.println("Pergunta: " + p.getPergunta());
+                System.out.println("Resposta Correta: " + p.getResposta());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
